@@ -22,12 +22,12 @@ public class CryptoServer {
             HttpServer server = HttpServer.create(address, 10);
             server.createContext("/encrypt", httpExchange -> {
                 String cleartext = getData(httpExchange.getRequestBody());
-                String response = null; //TODO
+                String response;
                 try {
                     response = Crypton.encrypt(cleartext, Crypton.myPublicKey);
                     System.out.println(response);
                     httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*"); // CHECK THIS !!!
-                    httpExchange.sendResponseHeaders(200, response.length());
+                    httpExchange.sendResponseHeaders(200, response.getBytes().length);
                     OutputStream os = httpExchange.getResponseBody();
                     os.write(response.getBytes());
                     os.close();
@@ -37,20 +37,29 @@ public class CryptoServer {
             });
             server.createContext("/decrypt", httpExchange -> {
                 String cleartext = getData(httpExchange.getRequestBody());
-                String response;
+                System.out.println("DECRYPT->got:\n" + cleartext);
+                String response = null;
                 try {
                     response = Crypton.decrypt(cleartext);
                     httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*"); // CHECK THIS !!!
-                    httpExchange.sendResponseHeaders(200, response.length());
+                    httpExchange.sendResponseHeaders(200, response.getBytes().length);
+                    OutputStream os = httpExchange.getResponseBody();
+                    System.out.println("response is: |" + response + '|');
+                    os.write(response.getBytes());
+                    os.close();
+                } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | IllegalArgumentException e) {
+                    response = "Message could not be decrypted";
+                    System.out.println("response is: |" + response + '|');
+                    httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*"); // CHECK THIS !!!
+                    httpExchange.sendResponseHeaders(205/*418*/, response.getBytes().length);
                     OutputStream os = httpExchange.getResponseBody();
                     os.write(response.getBytes());
                     os.close();
-                } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-                    e.printStackTrace();
                 }
             });
 
             server.start();
+            System.out.println("Server started!");
 
         } catch (IOException e) {
             e.printStackTrace();

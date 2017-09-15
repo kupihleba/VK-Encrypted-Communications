@@ -8,10 +8,10 @@ import java.security.spec.InvalidKeySpecException;
 public class Main {
 
     public static void main(String[] args) {
-
         try {
             //Crypton.gen();    // GENERATE KEY PAIR
             Crypton.init();     // INITIALIZE CRYPTON
+            //Crypton.decrypt("&lt;");
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | IOException | InvalidKeySpecException | ClassNotFoundException e) {
             e.printStackTrace();
         }
