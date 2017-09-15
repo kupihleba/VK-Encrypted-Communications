@@ -3,28 +3,6 @@
 const consoleID = "#Kupihleba_console";
 const mainConsole = $(".im_editable.im-chat-input--text._im_text");
 
-/**
- * function creates input field in html for encrypted messages
- */
-function init() {
-    $("<div class=\"im_editable im-chat-input--text _im_text\" tabindex=\"0\" id=\"Kupihleba_console\" contenteditable=\"true\" role=\"textbox\" aria-multiline=\"false\"></div>").insertAfter(".im_editable.im-chat-input--text._im_text");
-}
-
-/**
- * Loads hack design to show, that the extension is enabled
- */
-function loadCSS() {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.type = "text/css";
-    link.href = "file:///css/style.css";
-    document.documentElement.appendChild(link);
-}
-
-/**
- * Class for message encryption
- * @type {EncryptEngine}
- */
 const EncryptEngine = class {
     constructor() {
         //this._socket = io.connect("127.0.0.1:5005");
@@ -48,27 +26,89 @@ const EncryptEngine = class {
         //this._socket.emit(JSON.stringify(data));
         $.ajax({
             type: "POST",
-            url: "http://127.0.0.1:5005/encrypt",
+            url:"http://127.0.0.1:5005/encrypt",
             data: data,
             success: (data, txtStatus, jqXHR) => {
-                console.log(data);
-                if (this._callback) {
-                    this._callback(data);
-                }
-
-            }
-        });
+            if (this._callback) {
+            this._callback(data);
+        }
+    }});
         return "Encrypting ...";
     }
+    decryptMessage(message) {
+        const request = this._decrypt(message.innerHTML);
+        request.done((data, textStatus, xhr) => {
+            if (xhr.status === 200) {
+            message.innerHTML = data;
+            console.log(message);
+            message.className += " encrypted_msg";
+        } else {
+            // 205 for common msg
+        }
+    });
+        //request.onerror((data) => console.log(data));
+    }
 
-    decrypt(data) {
-
+    _decrypt(data) {
+        //console.log("decrypt ->", data);
+        return $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5005/decrypt",
+            data: data,
+        });
     }
 };
-
-
 const encryptor = new EncryptEngine();  // creating encryptor object
 encryptor.setCallbackFunc(dataArrived); // setting ui update function
+
+/**
+ * function creates input field in html for encrypted messages
+ */
+function init() {
+    $("<div class=\"im_editable im-chat-input--text _im_text\" tabindex=\"0\" id=\"Kupihleba_console\" contenteditable=\"true\" role=\"textbox\" aria-multiline=\"false\"></div>").insertAfter(".im_editable.im-chat-input--text._im_text");
+    //console.log($("#im_dialogs")[0].children);
+    Array.from($("#im_dialogs")[0].children).forEach(obj => obj.onclick = () => {
+        setTimeout(() => { decryptAll(getMessages()); }, 500);
+    });
+}
+
+/**
+ * Loads hack design to show, that the extension is enabled
+ * @deprecated
+ */
+function loadCSS() {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = "file:///css/style.css";
+    document.documentElement.appendChild(link);
+}
+
+function getMessages() {
+    console.log($(".im_msg_text"));
+    return $(".im_msg_text");
+}
+
+function decryptAll(messages) {
+    messages.each((i, msg) => {
+        if (msg.innerHTML !== "") {
+        encryptor.decryptMessage(msg);
+    }
+});
+}
+decryptAll(getMessages());
+
+function getCurrentAddress() {
+    return document.URL;
+}
+document.onclick = () => {
+    //console.log(getCurrentAddress());
+};
+/**
+ * Class for message encryption
+ * @type {EncryptEngine}
+ */
+
 
 /**
  * Sets the encrypted text, given by EncryptEngine
@@ -84,8 +124,6 @@ function dataArrived(data) {
 
 init();
 
-console.log($(consoleID));
-
 /**
  * evaluates the data and executes encrypt method of encryptor
  * @param data
@@ -100,11 +138,10 @@ function tube(data) {
 
 $(consoleID).on("keypress", (event) => {
     const key = event.which || event.keyCode;
-    console.log(key);
-    if (key === 13) {
-        const kupihleba = $(consoleID);
-        mainConsole.html(tube(kupihleba.html()));
-        kupihleba.html("");
-        //mainConsole.focus();
-    }
+if (key === 13) {
+    const kupihleba = $(consoleID);
+    mainConsole.html(tube(kupihleba.html()));
+    kupihleba.html("");
+    //mainConsole.focus();
+}
 });
