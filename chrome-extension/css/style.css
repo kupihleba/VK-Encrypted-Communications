@@ -1,0 +1,49 @@
+/*.top_home_link {
+    background-color: black;
+}*/
+#page_header {
+    background-color: black !important;
+}
+
+#page_header_cont .back {
+    background-color: black !important;
+}
+
+input.text.ts_input {
+    background-color: black !important;
+    color: white !important;
+}
+
+.top_nav_btn:hover {
+    background-color: silver !important;
+}
+
+.top_nav_link:hover {
+    background-color: silver !important;
+}
+
+body {
+    background: #efefef !important;
+}
+
+.nim-dialog:not(.nim-dialog_deleted).nim-dialog_hovered, .nim-dialog:not(.nim-dialog_deleted).nim-dialog_unread.nim-dialog_classic {
+    background: #e2e2e2 !important;
+}
+
+.nim-dialog:not(.nim-dialog_deleted):hover {
+    background: #efefef !important;
+}
+
+/*
+.ui_rmenu_item, .ui_rmenu_subitem {
+    color: black !important;
+}*/
+
+#side_bar ol li .left_row {
+    color: black !important;
+}
+
+#Kupihleba_console {
+    background: #efefef;
+    min-height: 70px;
+}
