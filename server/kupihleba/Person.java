@@ -7,6 +7,12 @@ import java.security.PublicKey;
  * Class holds info about public key of the person
  */
 public class Person implements Serializable {
+    public Person(String name, String id, PublicKey publicKey) {
+        this.name = name.replace(" ", "_");
+        this.id = id;
+        this.publicKey = publicKey;
+    }
+
     private String name;
     private String id;
     private PublicKey publicKey;
@@ -19,6 +25,14 @@ public class Person implements Serializable {
         Person person = (Person) o;
 
         return name.equals(person.name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public PublicKey getPublicKey() {

@@ -1,11 +1,9 @@
 /*.top_home_link {
     background-color: black;
 }*/
-
 #page_header {
     background-color: black !important;
 }
-
 #page_header_cont .back {
     background-color: black !important;
 }
@@ -30,8 +28,16 @@ body {
     background: #efefef !important;
 }
 
-.encrypted_msg {
-    background: #ffe3d9;
+.encrypted_msg_cover {
+    background: #ffeac4;
+    background: linear-gradient(white, silver, white);
+    transition: 1s;
+}
+/* .im-mess.im-mess_selected, .im-mess.im-mess_selected:hover {
+    background: #ff955b !important;
+}*/
+
+.im-mess-stack--mess ._im_stack_messages {
     transition: 1s;
 }
 
@@ -42,8 +48,7 @@ body {
 
 #side_bar ol li .left_row {
     color: black !important;
-}
-
+ }
 #Kupihleba_console {
     background: #efefef;
     min-height: 70px;

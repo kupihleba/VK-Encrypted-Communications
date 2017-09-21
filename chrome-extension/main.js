@@ -2,12 +2,13 @@
 
 const consoleID = "#Kupihleba_console";
 const mainConsole = $(".im_editable.im-chat-input--text._im_text");
+const IMpage = /https:\/\/vk.com\/im.*/i;
 
+/**
+ * Class for message encryption
+ * @type {EncryptEngine}
+ */
 const EncryptEngine = class {
-    constructor() {
-        //this._socket = io.connect("127.0.0.1:5005");
-        //this._socket.onmessage((ev) => this._callback(ev.data));
-    }
 
     /**
      * Set function, that would be executed with data parameter, when the CryptonServer sent the respond
@@ -23,41 +24,45 @@ const EncryptEngine = class {
      * @returns {string} encrypting status string
      */
     encrypt(data) {
-        //this._socket.emit(JSON.stringify(data));
         $.ajax({
             type: "POST",
-            url:"http://127.0.0.1:5005/encrypt",
+            url: "http://127.0.0.1:5005/encrypt",
             data: data,
             success: (data, txtStatus, jqXHR) => {
-            if (this._callback) {
-            this._callback(data);
-        }
-    }});
+                if (this._callback) {
+                    this._callback(data);
+                }
+            }
+        });
         return "Encrypting ...";
     }
+
     decryptMessage(message) {
-        const request = this._decrypt(message.innerHTML);
+        const request = EncryptEngine._decrypt(message.innerHTML);
         request.done((data, textStatus, xhr) => {
             if (xhr.status === 200) {
-            message.innerHTML = data;
-            console.log(message);
-            message.className += " encrypted_msg";
-        } else {
-            // 205 for common msg
-        }
-    });
+                message.innerHTML = data;
+                //console.log(data);
+                message.className += " encrypted_msg";
+                $(".encrypted_msg").parent().parent().addClass("encrypted_msg_cover");
+            } else {
+                // 205 for common msg
+            }
+        });
         //request.onerror((data) => console.log(data));
     }
 
-    _decrypt(data) {
-        //console.log("decrypt ->", data);
-        return $.ajax({
-            type: "POST",
-            url: "http://127.0.0.1:5005/decrypt",
-            data: data,
-        });
+    static _decrypt(data) {
+        if (data !== "") {
+            return $.ajax({
+                type: "POST",
+                url: "http://127.0.0.1:5005/decrypt",
+                data: data.replace("\0", ""),
+            });
+        }
     }
 };
+
 const encryptor = new EncryptEngine();  // creating encryptor object
 encryptor.setCallbackFunc(dataArrived); // setting ui update function
 
@@ -65,11 +70,22 @@ encryptor.setCallbackFunc(dataArrived); // setting ui update function
  * function creates input field in html for encrypted messages
  */
 function init() {
-    $("<div class=\"im_editable im-chat-input--text _im_text\" tabindex=\"0\" id=\"Kupihleba_console\" contenteditable=\"true\" role=\"textbox\" aria-multiline=\"false\"></div>").insertAfter(".im_editable.im-chat-input--text._im_text");
-    //console.log($("#im_dialogs")[0].children);
-    Array.from($("#im_dialogs")[0].children).forEach(obj => obj.onclick = () => {
-        setTimeout(() => { decryptAll(getMessages()); }, 500);
-    });
+    if (document.URL.match(IMpage)) {
+        $("<div class=\"im_editable im-chat-input--text _im_text\" tabindex=\"0\" id=\"Kupihleba_console\" contenteditable=\"true\" role=\"textbox\" aria-multiline=\"false\"></div>").insertAfter(".im_editable.im-chat-input--text._im_text");
+        //console.log($("#im_dialogs")[0].children);
+        Array.from($("#im_dialogs")[0].children).forEach(obj => obj.onclick = () => {
+            setTimeout(() => decryptAll(getMessages()), 500);
+        });
+
+        Array.from($("._im_ui_peers_list")[0].children).forEach(elem => elem.onclick = () => {
+            setTimeout(() => {
+                let dialogs = $("#im_dialogs");
+                if (dialogs) {
+                    decryptAll(getMessages());
+                }
+            }, 500);
+        });
+    }
 }
 
 /**
@@ -85,30 +101,23 @@ function loadCSS() {
 }
 
 function getMessages() {
-    console.log($(".im_msg_text"));
-    return $(".im_msg_text");
+    const all = $(".im_msg_text[class!='encrypted_msg']");
+        //.add(".im-mess--text.wall_module._im_log_body");
+    return all;//.filter(":not(.encrypted_msg)");
 }
+
 
 function decryptAll(messages) {
     messages.each((i, msg) => {
         if (msg.innerHTML !== "") {
-        encryptor.decryptMessage(msg);
-    }
-});
+            //console.log(msg.innerHTML);
+            encryptor.decryptMessage(msg);
+        }
+    });
 }
+
 decryptAll(getMessages());
-
-function getCurrentAddress() {
-    return document.URL;
-}
-document.onclick = () => {
-    //console.log(getCurrentAddress());
-};
-/**
- * Class for message encryption
- * @type {EncryptEngine}
- */
-
+init();
 
 /**
  * Sets the encrypted text, given by EncryptEngine
@@ -117,12 +126,27 @@ document.onclick = () => {
 function dataArrived(data) {
     const kupihleba = $(consoleID);
     mainConsole.html(data);
+    mainConsole.focus();
+//im-send-btn im-chat-input--send _im_send _im_send.im-send-btn_send im-send-btn_audio
+//im-send-btn im-chat-input--send _im_send _im_send.im-send-btn_send im-send-btn_send
+    //$(".im-send-btn.im-chat-input--send._im_send.im-send-btn_audio").removeClass("im-send-btn_audio").removeClass("im-send-btn_saudio").addClass("_im_send.im-send-btn_send");
+    $(".im-send-btn.im-send-btn_send").click();
     //mainConsole.html(tube(kupihleba.html()));
     kupihleba.html("");
-    mainConsole.focus();
+    $(".ph_content").html("cleartext message here")
 }
+$(".im-send-btn.im-chat-input--send._im_send.im-send-btn_audio").removeClass("im-send-btn_audio").removeClass("im-send-btn_saudio").addClass("_im_send.im-send-btn_send");
 
-init();
+let timerEnabled = false;
+function timer() {
+    if (document.URL.match(IMpage)) {
+        decryptAll(getMessages());
+    }
+    if (timerEnabled) {
+        setTimeout(timer, 2000);
+    }
+}
+timer();
 
 /**
  * evaluates the data and executes encrypt method of encryptor
@@ -138,10 +162,10 @@ function tube(data) {
 
 $(consoleID).on("keypress", (event) => {
     const key = event.which || event.keyCode;
-if (key === 13) {
-    const kupihleba = $(consoleID);
-    mainConsole.html(tube(kupihleba.html()));
-    kupihleba.html("");
-    //mainConsole.focus();
-}
+    if (key === 13) {
+        const kupihleba = $(consoleID);
+        $(".ph_content").html(tube(kupihleba.html()));
+        kupihleba.html("");
+        //mainConsole.focus();
+    }
 });
