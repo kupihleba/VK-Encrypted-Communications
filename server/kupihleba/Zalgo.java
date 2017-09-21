@@ -36,7 +36,11 @@ public class Zalgo {
         for (i = 0; i < lolChars.length; i++) {
             //System.out.println(String.format("i: %d;\tchar: %c", i, lolChars[i]));
             c = lolChars[i];
-            data = data.add(BigInteger.valueOf(Alphabet.idOf(c)));
+            try {
+                data = data.add(BigInteger.valueOf(Alphabet.idOf(c)));
+            } catch (Exception e) {
+                continue;
+            }
             if (i < lolChars.length - 1) {
                 data = data.multiply(cardinal);
                 cnt++;
@@ -114,11 +118,11 @@ final class Alphabet {
         return total[id];
     }
 
-    public static int idOf(char c) {
+    public static int idOf(char c) throws Exception {
         for (int i = 0; i < total.length; i++) {
             if (total[i] == c)
                 return i;
         }
-        throw new RuntimeException("Unknown data");
+        throw new Exception("Unknown data");
     }
 }

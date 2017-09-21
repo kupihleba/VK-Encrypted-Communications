@@ -38,6 +38,7 @@ public class CryptoServer {
                 }
             });
             server.createContext("/decrypt", httpExchange -> {
+                System.out.println("got client");
                 //byte[] bytes = getDataBytes(httpExchange.getRequestBody());
                 //System.out.println(String.format("GOT <- %s\nSTRING: |%s|", DatatypeConverter.printHexBinary(bytes), ""));
                 //if(true)return;
