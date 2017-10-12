@@ -4,11 +4,11 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
-public class Credits {
-    private static ArrayList<Person> people = new ArrayList<>();
+public class Credits implements Serializable {
+    private static HashMap<Long, Person> people = new HashMap<>();
     private static String PATH = "Data/";
     static {
         //people.addAll( ... ); TODO
@@ -20,13 +20,18 @@ public class Credits {
     }
 
     public static void addPerson(Person... p) {
-        people.addAll(Arrays.asList(p));
+        Arrays.asList(p).forEach(person -> {
+            people.put(person.getId(), person);
+        });
     }
 
-    public static PublicKey getKeyOf(String name) {
-        return people.get(people.indexOf(name)).getPublicKey();
+    public static PublicKey getKeyOf(long id) {
+        return people.get(id).getPublicKey();
     }
 
+    public static boolean humanIdExists(long id) {
+        return people.containsKey(id);
+    }
     /**
      * @deprecated
      */
@@ -47,7 +52,7 @@ public class Credits {
                 //Person person = (Person) decoder.readObject();
                 //decoder.close();
                 fis.close();
-                people.add(person);
+                people.put(person.getId(), person);
             }
         }
     }
@@ -61,7 +66,7 @@ public class Credits {
         if (!(f = new File(PATH)).exists()) {
             f.mkdirs();
         }
-        for (Person person : people) {
+        for (Person person : people.values()) {
             FileOutputStream fos = new FileOutputStream(PATH + String.format("%s_%s.dat", person.getName(), person.getId()));
             ObjectOutputStream out = new ObjectOutputStream(fos);
             out.writeObject(person);

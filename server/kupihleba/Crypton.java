@@ -1,5 +1,7 @@
 package kupihleba;
 
+import groovy.json.internal.Charsets;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -24,11 +26,15 @@ public class Crypton {
     public static PublicKey myPublicKey;
     private static final String PRIVATE_KEY_FILE = "MyPrivateKey.key";
     private static final String PUBLIC_KEY_FILE = "MyPublicKey.key";
-    private static final Pretty prettyType = Pretty.ZALGO;
+    public static Pretty prettyType = Pretty.ZALGO;
 
     enum Pretty {
         ZALGO,
         BASE64
+    }
+
+    public static void GenerateKeyPair(String name, String id, String path) {
+
     }
 
     /**
@@ -80,24 +86,24 @@ public class Crypton {
 
     static String encryptAES(String data, String key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, BadPaddingException, IllegalBlockSizeException {
         Cipher aes = Cipher.getInstance("AES");
-        byte[] keyHash = MessageDigest.getInstance("SHA-256").digest(key.getBytes("UTF-8")); // TODO Add salt!
+        byte[] keyHash = MessageDigest.getInstance("SHA-256").digest(key.getBytes(Charsets.UTF_8)); // TODO Add salt!
         if (keyHash.length != 32)
             throw new InvalidKeyException("Invalid key length");
         SecretKeySpec keySpec = new SecretKeySpec(keyHash, "AES");
 
 
         aes.init(Cipher.ENCRYPT_MODE, keySpec);
-        return Base64.getEncoder().encodeToString(aes.doFinal(data.getBytes("UTF-8")));
+        return Base64.getEncoder().encodeToString(aes.doFinal(data.getBytes(Charsets.UTF_8)));
     }
 
     static String decryptAES(String data, String key) throws NoSuchPaddingException, NoSuchAlgorithmException, UnsupportedEncodingException, BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
         Cipher aes = Cipher.getInstance("AES");
-        byte[] keyHash = MessageDigest.getInstance("SHA-256").digest(key.getBytes("UTF-8")); // TODO Add salt!
+        byte[] keyHash = MessageDigest.getInstance("SHA-256").digest(key.getBytes(Charsets.UTF_8)); // TODO Add salt!
         if (keyHash.length != 32)
             throw new InvalidKeyException("Invalid key length");
         SecretKeySpec keySpec = new SecretKeySpec(keyHash, "AES");
         aes.init(Cipher.DECRYPT_MODE, keySpec);
-        return new String(aes.doFinal(Base64.getDecoder().decode(data)), "UTF-8");
+        return new String(aes.doFinal(Base64.getDecoder().decode(data)), Charsets.UTF_8);
     }
 
     /**
